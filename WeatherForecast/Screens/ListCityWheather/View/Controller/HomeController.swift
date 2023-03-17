@@ -19,13 +19,21 @@ class HomeController: UIViewController {
     @IBOutlet weak var pressureLabel: UILabel!
     @IBOutlet weak var humidityLabel: UILabel!
     
+    @IBOutlet weak var buttonDayOne: UIButton!
+    @IBOutlet weak var buttonDaySecond: UIButton!
+    @IBOutlet weak var buttonDayThird: UIButton!
+    @IBOutlet weak var buttonDayFourth: UIButton!
+    @IBOutlet weak var buttonDayFifth: UIButton!
+    
+    var latitude = Double()
+    var longitude = Double()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
-        viewModel.fetchWeather { [weak self] in
-            DispatchQueue.main.async {
-                self?.setupUI()
+        viewModel.fetchWeatherWithLatLong(for: latitude, for: longitude) {
+            DispatchQueue.main.sync {
+                self.setupUI()
             }
         }
     }
@@ -33,6 +41,52 @@ class HomeController: UIViewController {
     private func setupUI() {
         setupHeader()
         setupSubheader()
+    }
+    
+    @IBAction func buttonDayOneAction(sender: AnyObject) {
+        buttonDayOne.isSelected = true;
+        buttonDaySecond.isSelected = false;
+        buttonDayThird.isSelected = false;
+        buttonDayFourth.isSelected = false;
+        buttonDayFifth.isSelected = false;
+        
+        viewModel.fetchWeatherDayWithLatLong(for: latitude, for: longitude) {
+            DispatchQueue.main.sync {
+                self.setupUI()
+            }
+        }
+    }
+    
+    @IBAction func buttonDaySecondAction(sender: AnyObject) {
+        buttonDayOne.isSelected = false
+        buttonDaySecond.isSelected = true
+        buttonDayThird.isSelected = false
+        buttonDayFourth.isSelected = false
+        buttonDayFifth.isSelected = false
+    }
+    
+    @IBAction func buttonDayThirdAction(sender: AnyObject) {
+        buttonDayOne.isSelected = false
+        buttonDaySecond.isSelected = false
+        buttonDayThird.isSelected = true
+        buttonDayFourth.isSelected = false
+        buttonDayFifth.isSelected = false
+    }
+    
+    @IBAction func buttonDayFourthAction(sender: AnyObject) {
+        buttonDayOne.isSelected = false
+        buttonDaySecond.isSelected = false
+        buttonDayThird.isSelected = false
+        buttonDayFourth.isSelected = true
+        buttonDayFifth.isSelected = false
+    }
+    
+    @IBAction func buttonDayFifthAction(sender: AnyObject) {
+        buttonDayOne.isSelected = false
+        buttonDaySecond.isSelected = false
+        buttonDayThird.isSelected = false
+        buttonDayFourth.isSelected = false
+        buttonDayFifth.isSelected = true
     }
     
     private func setupHeader() {

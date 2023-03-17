@@ -11,6 +11,17 @@ struct Weather: Decodable {
     var name: String
     var main: Main
     var wind: Wind
+    var coord: Coord
+    
+    struct Coord: Decodable {
+        var lon: Double
+        var lat: Double
+        
+        enum CodingKeys: String, CodingKey {
+            case lon = "lon"
+            case lat = "lat"
+        }
+    }
     
     struct Main: Decodable {
         var temp: Double

@@ -44,9 +44,17 @@ class HomeViewModel {
         return String(weather?.windSpeed ?? 0)
     }
     
+    var latitudeString: Double {
+        return Double(weather?.coord.lat ?? 0)
+    }
+    
+    var longitudeString: Double {
+        return Double(weather?.coord.lon ?? 0)
+    }
+    
     // MARK: - Helpers
     private func displayableFahrenheitTemperature(_ temperatureAsKelvin: Double) -> String {
-        return String(format: "%.1f", temperatureAsKelvin.kelvinToFahrenheit) + " °F"
+        return String(format: "%.1f", temperatureAsKelvin.kelvinToFahrenheit) + "°"
     }
     
     func fetchWeather(for cityId: Int = 5128581, _ completion: @escaping (() -> Void)) {
@@ -58,6 +66,13 @@ class HomeViewModel {
     
     func fetchWeatherWithLatLong(for lat: Double, for long: Double, _ completion: @escaping (() -> Void)) {
         NetworkController.fetchWeatherWithLatLong(for: lat, long: long) { weather in
+            self.weather = weather
+            completion()
+        }
+    }
+    
+    func fetchWeatherDayWithLatLong(for lat: Double, for long: Double, _ completion: @escaping (() -> Void)) {
+        NetworkController.fetchWeatherDayWithLatLong(for: lat, long: long) { weather in
             self.weather = weather
             completion()
         }

@@ -8,10 +8,6 @@
 import UIKit
 import MapKit
 
-protocol SendSelectedCityLocationDelegate {
-    func getSelectedLocationData(location: AnyObject?, isFromSearchBar: Bool)
-}
-
 class LocationSearchTable: UITableViewController {
     
     var resultSearchController:UISearchController? = nil
@@ -19,13 +15,10 @@ class LocationSearchTable: UITableViewController {
     var mapView: MKMapView? = nil
     
     var handleMapSearchDelegate:HandleMapSearch? = nil
-    var delegate: SendSelectedCityLocationDelegate?
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        
-        
+  
     }
     
     // MARK: - Table view data source
@@ -47,9 +40,7 @@ class LocationSearchTable: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let selectedItem = matchingItems[indexPath.row].placemark
         print("Seleted Item ==> \(selectedItem)")
-        self.delegate?.getSelectedLocationData(location: selectedItem, isFromSearchBar: true)
-        self.navigationController?.popViewController(animated: true)
-
+        handleMapSearchDelegate?.dropPinZoomIn(placemark: selectedItem, isFromsearchBar: true)
         dismiss(animated: true, completion: nil)
         
     }

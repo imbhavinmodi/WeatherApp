@@ -9,7 +9,7 @@ import UIKit
 import MapKit
 
 protocol HandleMapSearch {
-    func dropPinZoomIn(placemark:MKPlacemark)
+    func dropPinZoomIn(placemark:MKPlacemark, isFromsearchBar: Bool)
 }
 
 class SearchViewController: UIViewController {
@@ -18,6 +18,8 @@ class SearchViewController: UIViewController {
     @IBOutlet weak var mapView: MKMapView!
     var resultSearchController:UISearchController? = nil
     var selectedPin:MKPlacemark? = nil
+
+    var delegate: HandleMapSearch?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -70,6 +72,15 @@ extension SearchViewController : CLLocationManagerDelegate {
 }
 
 extension SearchViewController: HandleMapSearch {
+    
+    func dropPinZoomIn(placemark:MKPlacemark, isFromsearchBar: Bool) {
+        
+        print("Selected Place ==>", placemark)
+        self.delegate?.dropPinZoomIn(placemark: placemark, isFromsearchBar: true)
+        self.navigationController?.popViewController(animated: true)
+
+    }
+    /*
     func dropPinZoomIn(placemark:MKPlacemark){
         // cache the pin
         selectedPin = placemark
@@ -87,4 +98,5 @@ extension SearchViewController: HandleMapSearch {
         let region = MKCoordinateRegion(center: placemark.coordinate, span: span)
         mapView.setRegion(region, animated: true)
     }
+     */
 }

@@ -1,10 +1,17 @@
-# WeatherApp
+# Weather Forecast App
 
-Here i hace created app of getting current location and check weather from current latitude and longitude
+Here I hace created app for weather forecast
 
-I have also create search city name with MapKit
 
-Get data in dictionary also with selected location using protocol
+-> Create screen for list in that first cell display current location information
 
-App is in development phase.
+-> You can add new city by click on "Plus" icon and search city then it will get the weather information of that city and add to list of weather in first screen 
+
+-> You can check more information about weather by selecting particualr cell of list
+
+-> In that detail screen 5 days weather data are coming from api
+
+-> Create model and view model and api manager file in this project.
+
+
  

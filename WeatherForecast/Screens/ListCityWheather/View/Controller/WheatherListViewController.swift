@@ -8,13 +8,20 @@
 import UIKit
 import MapKit
 import CoreLocation
+import Alamofire
 
-class WheatherListViewController: UIViewController, SendSelectedCityLocationDelegate {
+struct Response: Codable {
+    let test : String
+   
+}
+
+class WheatherListViewController: UIViewController {
     
     private let viewModel = HomeViewModel()
     
     var dictWheatherData = [String:Any]()
     var arrayWheatherData = [Any]()
+
     var selectedLocation: AnyObject? = nil
     var currentLocation: AnyObject? = nil
 
@@ -22,23 +29,23 @@ class WheatherListViewController: UIViewController, SendSelectedCityLocationDele
     @IBOutlet weak var wheatherCityListTableView: UITableView!
     let locationManager = CLLocationManager()
     var currentLocationStr = "Current location"
-    var isFromSearchBar = false
+    var isFromSearch = false
     // MARK: - Variables
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        wheatherCityListTableView.register(UINib(nibName: "WeatherCityListCell", bundle: nil), forCellReuseIdentifier: "WeatherCityListCell")
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.requestWhenInUseAuthorization()
         configuration()
         
-    }
-
-    func getSelectedLocationData(location: AnyObject?, isFromSearchBar: Bool) {
-        selectedLocation = location
-        self.isFromSearchBar = isFromSearchBar
     }
     
     @IBAction func addCity(_ sender: Any) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let searchVC = storyboard.instantiateViewController(withIdentifier: "SearchViewController") as! SearchViewController
+        searchVC.delegate = self
         navigationController?.pushViewController(searchVC, animated: true)
 
     }
@@ -46,14 +53,11 @@ class WheatherListViewController: UIViewController, SendSelectedCityLocationDele
 }
 
 extension WheatherListViewController {
-
+    
+    
     func configuration() {
-        wheatherCityListTableView.register(UINib(nibName: "WeatherCityListCell", bundle: nil), forCellReuseIdentifier: "WeatherCityListCell")
-        locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.requestWhenInUseAuthorization()
         
-        if isFromSearchBar {
+        if isFromSearch {
             currentLocation = selectedLocation
         }
         else {
@@ -64,6 +68,7 @@ extension WheatherListViewController {
 
         viewModel.fetchWeatherWithLatLong(for: currentLocation?.coordinate.latitude ?? 0.0, for: currentLocation?.coordinate.longitude ?? 0.0) {
             DispatchQueue.main.sync {
+                
                 self.dictWheatherData.updateValue(self.viewModel.nameString, forKey: "cityname")
                 self.dictWheatherData.updateValue("\(Decimal(string: self.viewModel.humidityString) ?? 0)", forKey: "temp")
 
@@ -73,7 +78,11 @@ extension WheatherListViewController {
 
                 self.dictWheatherData.updateValue(self.viewModel.minTemperatureString, forKey: "lowtemp")
 
-                self.arrayWheatherData.append(self.dictWheatherData)
+                self.dictWheatherData.updateValue(self.viewModel.latitudeString, forKey: "lat")
+                
+                self.dictWheatherData.updateValue(self.viewModel.longitudeString, forKey: "lon")
+                
+                self.arrayWheatherData.append(self.dictWheatherData as NSDictionary)
                 print("Weather Dict ==> \(self.dictWheatherData)")
                 
                 self.wheatherCityListTableView.reloadData()
@@ -107,7 +116,7 @@ extension WheatherListViewController : CLLocationManagerDelegate {
 extension WheatherListViewController: UITableViewDataSource, UITableViewDelegate {
 
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        1
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -119,15 +128,16 @@ extension WheatherListViewController: UITableViewDataSource, UITableViewDelegate
             return UITableViewCell()
         }
         print("Array data ==> \(arrayWheatherData)")
-        let section = arrayWheatherData[indexPath.section]
+        let section = arrayWheatherData[indexPath.row] as! NSDictionary
 //        let key = section
 //        section.keys.sorted()[indexPath.row]
 //        let value = section[key]!
 
-        cell.cityNameLabel.text = viewModel.nameString
-        cell.descriptionLabel.text = viewModel.windSpeedString
-        cell.tempLabel.text = viewModel.humidityString
-        cell.highLowTempLabel.text = viewModel.maxTemperatureString + viewModel.minTemperatureString
+        cell.cityNameLabel.text = section["cityname"] as? String
+        cell.descriptionLabel.text = section["windspeed"] as? String
+        cell.tempLabel.text = "\(section["temp"] as? String ?? "")°"
+        let strHighLowTemp = "H:\(section["hightemp"] as? String ?? "")    L:\(section["lowtemp"] as? String ?? "")"
+        cell.highLowTempLabel.text = strHighLowTemp
         
         return cell
     }
@@ -139,6 +149,9 @@ extension WheatherListViewController: UITableViewDataSource, UITableViewDelegate
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
     let detailsVC = segue.destination as! HomeController
         let selectedRow = wheatherCityListTableView.indexPathForSelectedRow?.row
+        let section = arrayWheatherData[selectedRow ?? 0] as! NSDictionary
+        detailsVC.latitude = section["lat"] as? Double ?? 0.0
+        detailsVC.longitude = section["lon"] as? Double ?? 0.0
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -151,4 +164,20 @@ extension Float {
     var clean: String {
        return self.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", self) : String(self)
     }
+}
+
+
+extension WheatherListViewController: HandleMapSearch {
+    func dropPinZoomIn(placemark: MKPlacemark, isFromsearchBar: Bool) {
+        print("Selected Place ==>", placemark)
+        print("Selected Place ==>", isFromsearchBar)
+        print("Weather Dict ==> \(self.dictWheatherData)")
+        selectedLocation = placemark.location
+        isFromSearch = isFromsearchBar
+
+        configuration()
+
+    }
+    
+    
 }

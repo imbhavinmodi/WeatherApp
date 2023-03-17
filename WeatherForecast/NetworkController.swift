@@ -15,7 +15,8 @@ struct NetworkController {
     enum Endpoint {
         case cityId(path: String = "/data/2.5/weather", id: Int)
         case latLong(path: String = "/data/2.5/weather", lat: Double, long: Double)
-        
+        case daywithlatLong(path: String = "/data/2.5/forecast", lat: Double, long: Double)
+
         var url: URL? {
             var components = URLComponents()
             
@@ -33,6 +34,8 @@ struct NetworkController {
                 return path
             case .latLong(let path, _, _):
                 return path
+            case .daywithlatLong(let path, _, _):
+                return path
             }
         
         }
@@ -45,6 +48,9 @@ struct NetworkController {
             case .cityId(_, let id):
                 queryItems.append(URLQueryItem(name: "id", value: String(id)))
             case .latLong(_, let lat, let long):
+                queryItems.append(URLQueryItem(name: "lat", value: String(lat)))
+                queryItems.append(URLQueryItem(name: "lon", value: String(long)))
+            case .daywithlatLong(_, let lat, let long):
                 queryItems.append(URLQueryItem(name: "lat", value: String(lat)))
                 queryItems.append(URLQueryItem(name: "lon", value: String(long)))
             }
@@ -97,6 +103,27 @@ struct NetworkController {
                 }.resume()
             }
     }
+    
+    static func fetchWeatherDayWithLatLong(for lat: Double, long: Double, _ completion: @escaping ((Weather) -> Void)) {
+          if let url = Endpoint.daywithlatLong(lat: lat, long: long).url {
+              print("URL ==> \(url)")
+              URLSession.shared.dataTask(with: url) { (data, response, error) in
+                  if let error = error {
+                      print("Whoops, and error occured!", error)
+                  }
+                  
+                  if let data = data {
+                      do {
+                          let weather = try JSONDecoder().decode(Weather.self, from: data)
+                          completion(weather)
+                      } catch let error {
+                          print("failed to decode object...", error)
+                      }
+                      
+                  }
+              }.resume()
+          }
+  }
     
 //    static func fetchMailMessages(_ completion: @escaping (([Mail.Messsage]) -> Void)) {
 //
